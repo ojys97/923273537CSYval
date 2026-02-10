@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine? 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            min-height: 600px;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #ff1744;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .emoji {
+            font-size: 5em;
+            margin-bottom: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .buttons {
+            margin-top: 40px;
+            position: relative;
+            height: 200px;
+        }
+
+        button {
+            font-size: 1em;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #yesBtn {
+            background: linear-gradient(135deg, #ff6b6b, #ff1744);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 23, 68, 0.4);
+            position: relative;
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 23, 68, 0.6);
+        }
+
+        #noBtn {
+            background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
+            color: #333;
+            position: fixed;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.15s ease-out;
+            z-index: 100;
+        }
+
+        #noBtn.clicked {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        .success-message {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .success-message h2 {
+            color: #ff1744;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .success-message p {
+            font-size: 1.3em;
+            color: #666;
+        }
+
+        .falling-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            top: 0;
+            left: 0;
+        }
+
+        .falling-item {
+            position: absolute;
+            font-size: 2em;
+            animation: fall linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="falling-container" id="fallingFlowers"></div>
+    
+    <div class="container" id="mainContainer">
+        <div id="question">
+            <div class="emoji">💖</div>
+            <h1>BIBUUUUU!!🐻‍❄️</h1>
+            <h1>Chua Sher Yin</h1>
+            <h2>Will You Be My Valentine?💖</h2>
+            <div class="buttons">
+                <button id="yesBtn">YES! 💕</button>
+                <button id="noBtn">No</button>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <div class="emoji">🎉</div>
+            <h1><b>NOTE:</b></h1>
+            <h3>I may not be able to spend Valentines with you but</h3>
+            <h2>Yay! 💕</h2>
+            <p>You just redeemed a freegift </p>
+            <p>And you will always be in my Heart❤️</p>
+            <p>I hope you like your gift </p>
+            <div class="emoji">😊</div>
+            <p>Sincerely, from your bibu 🐻</p>
+        </div>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const question = document.getElementById('question');
+        const successMessage = document.getElementById('successMessage');
+        const mainContainer = document.getElementById('mainContainer');
+
+        let isMoving = true;
+        let hasClickedNo = false;
+
+        function getDistance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+
+        function moveButton() {
+            if (!isMoving) return;
+
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+            
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            const maxX = viewportWidth - btnWidth - 20;
+            const maxY = viewportHeight - btnHeight - 20;
+            
+            const randomX = Math.random() * (maxX - 20) + 20;
+            const randomY = Math.random() * (maxY - 20) + 20;
+            
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isMoving) return;
+
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
+            
+            const distance = getDistance(e.clientX, e.clientY, btnCenterX, btnCenterY);
+            
+            if (distance < 80) {
+                moveButton();
+            }
+        });
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        setInterval(moveButton, isMobile ? 1000 : 2000);
+
+        let touchMoveHandler = (e) => {
+            if (!isMoving) return;
+            
+            const touch = e.touches[0];
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
+            
+            const distance = getDistance(touch.clientX, touch.clientY, btnCenterX, btnCenterY);
+            
+            if (distance < 100) {
+                moveButton();
+            }
+        };
+
+        document.addEventListener('touchmove', touchMoveHandler, { passive: true });
+
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!hasClickedNo) {
+                hasClickedNo = true;
+                noBtn.textContent = 'CANNOT!!';
+                noBtn.classList.add('clicked');
+                
+                setTimeout(() => {
+                    moveButton();
+                }, 500);
+            }
+        });
+
+        yesBtn.addEventListener('click', () => {
+            isMoving = false;
+            question.style.display = 'none';
+            successMessage.style.display = 'block';
+            createCelebrationHearts();
+        });
+
+        function createCelebrationHearts() {
+            const heartsContainer = document.getElementById('fallingFlowers');
+            const heartSymbols = ['❤️', '💕', '💖', '💗', '💝', '💓'];
+            
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'falling-item';
+                    heart.style.fontSize = '3em';
+                    heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    heart.style.opacity = '1';
+                    heartsContainer.appendChild(heart);
+                    
+                    setTimeout(() => heart.remove(), 4000);
+                }, i * 100);
+            }
+        }
+
+        function createFallingFlowers() {
+            const container = document.getElementById('fallingFlowers');
+            const flowerSymbols = ['🌸', '🌺', '🌼', '🌻', '🌷', '💐', '🌹', '🏵️', '🌷', '🌸', '💮', '🪷'];
+            
+            function addFlower() {
+                const flower = document.createElement('div');
+                flower.className = 'falling-item';
+                flower.textContent = flowerSymbols[Math.floor(Math.random() * flowerSymbols.length)];
+                flower.style.left = Math.random() * 100 + '%';
+                flower.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                flower.style.fontSize = (Math.random() * 1.5 + 1) + 'em';
+                container.appendChild(flower);
+                
+                setTimeout(() => flower.remove(), parseFloat(flower.style.animationDuration) * 1000);
+            }
+            
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => addFlower(), i * 200);
+            }
+            
+            setInterval(() => {
+                addFlower();
+                setTimeout(() => addFlower(), 200);
+                setTimeout(() => addFlower(), 400);
+            }, 800);
+        }
+
+        moveButton();
+        createFallingFlowers();
+    </script>
+</body>
+</html>
